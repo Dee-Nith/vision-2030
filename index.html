@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEXIO — Vision 2030</title>
+<style>
+  :root {
+    --bg: #2A3038;
+    --bg-deep: #1E232A;
+    --ink: #F5F2EB;
+    --ink-soft: #C7C2B7;
+    --mute: #7C7E84;
+    --blue: #B8D4E3;
+    --gold: #D4A24C;
+    --gold-warm: #E8B95E;
+    --line: rgba(245, 242, 235, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif; }
+  .mono  { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .upper { text-transform: uppercase; letter-spacing: 0.18em; }
+
+  /* ---------- LOADING SCREEN ---------- */
+  #loader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg-deep);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #loader.done { opacity: 0; visibility: hidden; }
+  #loader img { width: 200px; opacity: 0.95; filter: invert(1) brightness(2); }
+  #loader .label {
+    margin-top: 24px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  #loader .bar {
+    width: 220px; height: 1px; background: var(--line); margin-top: 18px; overflow: hidden;
+  }
+  #loader .bar::after {
+    content: ""; display: block; width: 30%; height: 100%; background: var(--gold);
+    animation: loadbar 1.2s ease-in-out infinite;
+  }
+  @keyframes loadbar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+
+  /* ---------- TOP NAV ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 40px;
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+  .nav .logo {
+    font-weight: 800; font-size: 18px; letter-spacing: 0.35em;
+    color: var(--ink);
+  }
+  .nav .meta {
+    font-size: 11px; letter-spacing: 0.3em; color: var(--ink-soft);
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section {
+    position: relative;
+    width: 100%;
+    min-height: 145vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+  /* sections containing position:sticky cannot have overflow:hidden — breaks sticky */
+  section.has-pin {
+    display: block;
+    overflow: visible;
+    min-height: auto;
+    scroll-snap-align: none;
+  }
+  /* closing slide doesn't need a trailing pause */
+  #close { min-height: auto; scroll-snap-align: none; }
+  .scene-bg {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+  }
+  .scene-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(30,35,42,0.7) 0%, rgba(30,35,42,0.25) 30%, rgba(30,35,42,0.25) 70%, rgba(30,35,42,0.78) 100%);
+    z-index: 2;
+  }
+  .scene-content {
+    position: relative; z-index: 3;
+    width: min(1200px, 92vw);
+    padding: 120px 40px;
+  }
+  /* text-shadow on all overlay copy for legibility against busy illustrations */
+  .scene-content h1.display,
+  .scene-content h2.section-title,
+  .scene-content p.lede,
+  .scene-content p.body,
+  .scene-content .eyebrow {
+    text-shadow: 0 2px 24px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  /* ---------- TYPOGRAPHY ---------- */
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 24px;
+    display: inline-flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before {
+    content: ""; width: 28px; height: 1px; background: var(--gold);
+  }
+  h1.display {
+    font-family: ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 104px);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+  }
+  h1.display em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  h2.section-title {
+    font-family: ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: 24px;
+  }
+  h2.section-title em { font-style: italic; color: var(--gold); }
+  p.lede {
+    font-size: clamp(18px, 1.4vw, 22px);
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 620px;
+  }
+  p.body {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 560px;
+  }
+  .number {
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif;
+    font-size: clamp(72px, 11vw, 168px);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .number .unit {
+    font-size: 0.3em; color: var(--ink-soft); letter-spacing: 0.2em; margin-left: 0.3em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- REVEAL ANIMATIONS ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 1s cubic-bezier(0.2, 0.7, 0.2, 1),
+                transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal.delay-1 { transition-delay: 0.12s; }
+  .reveal.delay-2 { transition-delay: 0.24s; }
+  .reveal.delay-3 { transition-delay: 0.36s; }
+  .reveal.delay-4 { transition-delay: 0.48s; }
+
+  /* ---------- HERO (Section 1 — Scene 1) ---------- */
+  #hero {
+    min-height: 145vh;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  #hero .scene-bg {
+    background-image: url('panaromic.png');
+    background-size: cover;
+    background-position: center right;
+    background-repeat: no-repeat;
+    background-color: var(--bg-deep);
+  }
+  #hero .scene-overlay {
+    background:
+      linear-gradient(90deg, rgba(30,35,42,0.92) 0%, rgba(30,35,42,0.55) 28%, rgba(30,35,42,0) 50%, rgba(30,35,42,0) 100%),
+      linear-gradient(180deg, rgba(30,35,42,0) 0%, rgba(30,35,42,0) 60%, rgba(30,35,42,0.45) 100%);
+  }
+  #hero .scene-content {
+    text-align: left;
+    padding: 0 0 0 max(40px, 5vw);
+    max-width: 640px;
+    width: auto;
+  }
+  #hero h1.display {
+    font-size: clamp(48px, 5.4vw, 88px);
+    margin-bottom: 0;
+  }
+  #hero h1.display .big-year {
+    display: block;
+    font-family: ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif;
+    font-style: normal;
+    font-size: clamp(120px, 14vw, 220px);
+    line-height: 0.92;
+    color: var(--gold);
+    letter-spacing: -0.04em;
+    margin-bottom: 18px;
+  }
+  #hero .marker-2030 {
+    position: absolute;
+    top: 4%; left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    text-align: center;
+    pointer-events: none;
+  }
+  #hero .marker-2030 .label {
+    font-size: 10px; letter-spacing: 0.4em; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  #hero .marker-2030 .num {
+    font-family: ui-serif, Georgia, serif;
+    font-size: clamp(28px, 3vw, 44px);
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  /* leader line from annotation down to the summit */
+  #hero .marker-2030::after {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+    margin: 0 auto;
+  }
+  #hero .marker-2030 .summit-tag {
+    font-size: 10px; letter-spacing: 0.35em; color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .scroll-cue {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    z-index: 4;
+    font-size: 11px; letter-spacing: 0.35em; color: var(--ink-soft);
+    text-transform: uppercase;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .scroll-cue .line {
+    width: 1px; height: 48px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+    animation: cue 2.4s ease-in-out infinite;
+  }
+  @keyframes cue {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* ---------- SECTION 2 (Scene 2 — base camp looking up) ---------- */
+  #base-camp .scene-bg { background-image: url('glory.png'); }
+  #base-camp .scene-overlay {
+    background: linear-gradient(90deg, rgba(30,35,42,0.85) 0%, rgba(30,35,42,0.45) 25%, rgba(30,35,42,0) 50%, rgba(30,35,42,0) 100%),
+                linear-gradient(180deg, rgba(30,35,42,0) 0%, rgba(30,35,42,0) 70%, rgba(30,35,42,0.6) 100%);
+  }
+  #base-camp .scene-content {
+    width: 100%;
+    padding-left: max(40px, 5vw);
+  }
+  #base-camp .inner {
+    max-width: 480px;
+    text-align: left;
+  }
+
+  /* ---------- LOOKING UP (Scene 2 — the human moment before the climb) ---------- */
+  #looking-up { min-height: 145vh; }
+  #looking-up .scene-bg { background-image: url('scene2.png'); }
+  #looking-up .scene-overlay {
+    background: linear-gradient(90deg, rgba(30,35,42,0.1) 0%, rgba(30,35,42,0.3) 50%, rgba(30,35,42,0.85) 100%);
+  }
+  #looking-up .scene-content {
+    align-self: center;
+    width: 100%;
+    padding-top: 80px;
+    padding-bottom: 0;
+  }
+  #looking-up .inner {
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: 8vw;
+    text-align: left;
+  }
+
+  /* ---------- BASE CAMP ZOOM (isometric base camp focus) ---------- */
+  #base-camp-zoom { min-height: 145vh; }
+  #base-camp-zoom .scene-bg {
+    background-image: url('basecamp.jpg');
+    background-size: cover;
+    background-position: 65% center;
+    background-repeat: no-repeat;
+    background-color: var(--bg-deep);
+  }
+  #base-camp-zoom .scene-overlay {
+    background:
+      linear-gradient(90deg, rgba(30,35,42,0.92) 0%, rgba(30,35,42,0.6) 28%, rgba(30,35,42,0) 50%, rgba(30,35,42,0) 100%),
+      linear-gradient(180deg, rgba(30,35,42,0) 0%, rgba(30,35,42,0) 65%, rgba(30,35,42,0.6) 100%);
+  }
+  #base-camp-zoom .scene-content {
+    width: 100%;
+    padding-left: max(40px, 5vw);
+  }
+  #base-camp-zoom .inner {
+    max-width: 480px;
+    text-align: left;
+  }
+
+  /* ---------- SECTION 3 (Scene 3 — the strategic spine) ---------- */
+  .strategy-section {
+    height: 800vh; /* tall scroll container — extra room for acclimatization rhythm */
+  }
+  .strategy-section .pin {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .strategy-section .scene-bg { background-image: url('scene3.png'); }
+  .strategy-section .climber-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .strategy-section .camp-marker {
+    position: absolute;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .strategy-section .camp-marker.active { opacity: 1; }
+  .camp-marker .pin-dot {
+    width: 12px; height: 12px;
+    border: 2px solid var(--gold);
+    background: var(--bg);
+    border-radius: 50%;
+    margin: 0 auto 8px;
+  }
+  .camp-marker .label-box {
+    background: rgba(30,35,42,0.92);
+    border: 1px solid var(--line);
+    padding: 10px 16px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+  }
+  .camp-marker .camp-name {
+    font-size: 10px; letter-spacing: 0.3em; color: var(--ink-soft);
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .camp-marker .camp-year {
+    font-size: 11px; letter-spacing: 0.25em; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .camp-marker .camp-target {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 24px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .camp-marker .camp-target small {
+    font-size: 11px; color: var(--ink-soft); letter-spacing: 0.15em; margin-left: 4px;
+  }
+
+  .strategy-section .strategy-overlay {
+    position: absolute;
+    top: 50%; left: 8vw;
+    transform: translateY(-50%);
+    z-index: 6;
+    max-width: 380px;
+    /* dark backing panel so text is legible against the white mountain */
+    background: rgba(30,35,42,0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 28px 28px;
+    border-left: 2px solid var(--gold);
+  }
+  .strategy-section .strategy-overlay .eyebrow { color: var(--gold); }
+  .strategy-section .strategy-overlay h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: clamp(32px, 3.4vw, 48px);
+    line-height: 1.04;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .strategy-section .strategy-overlay h2 em { color: var(--gold); font-style: italic; }
+  .strategy-section .strategy-overlay p { color: var(--ink-soft); font-size: 15px; line-height: 1.55; }
+
+  /* Indian flag at the summit (slide 5 only) */
+  #strategy .summit-flag {
+    position: absolute;
+    left: 78%;
+    top: 6%;
+    z-index: 5;
+    pointer-events: none;
+    transform: translate(-50%, 0);
+    opacity: 1;
+    transform-origin: bottom center;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  }
+  #strategy .summit-flag svg {
+    width: 56px; height: auto;
+    display: block;
+  }
+  #strategy .summit-flag .flag-fabric {
+    animation: flagWave 2.4s ease-in-out infinite;
+    transform-origin: 4px center;
+  }
+  @keyframes flagWave {
+    0%, 100% { transform: skewX(0deg); }
+    50% { transform: skewX(-3deg); }
+  }
+
+  /* Glowing "VISION 2030 BY 2030" sign — floats in open sky between the two peak tips */
+  #strategy-2 .vision-sign {
+    position: absolute;
+    left: 63%;
+    top: 13%;
+    z-index: 5;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--gold);
+  }
+  #strategy-2 .vision-sign .top-tag {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px rgba(212, 162, 76, 0.9);
+  }
+  #strategy-2 .vision-sign .big {
+    font-family: ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: clamp(30px, 3.2vw, 52px);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    color: var(--gold-warm);
+    text-shadow:
+      0 0 8px rgba(232, 185, 94, 0.95),
+      0 0 18px rgba(232, 185, 94, 0.75),
+      0 0 32px rgba(212, 162, 76, 0.55),
+      0 0 64px rgba(212, 162, 76, 0.35);
+    animation: visionPulse 3.2s ease-in-out infinite;
+  }
+  #strategy-2 .vision-sign .bot-tag {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 7px;
+    text-shadow: 0 0 8px rgba(212, 162, 76, 0.9);
+  }
+  @keyframes visionPulse {
+    0%, 100% {
+      text-shadow:
+        0 0 6px rgba(232, 185, 94, 0.95),
+        0 0 14px rgba(232, 185, 94, 0.75),
+        0 0 28px rgba(212, 162, 76, 0.55),
+        0 0 56px rgba(212, 162, 76, 0.35);
+    }
+    50% {
+      text-shadow:
+        0 0 10px rgba(232, 185, 94, 1),
+        0 0 22px rgba(232, 185, 94, 0.9),
+        0 0 44px rgba(212, 162, 76, 0.7),
+        0 0 88px rgba(212, 162, 76, 0.5);
+    }
+  }
+
+  /* progress rail */
+  .strategy-section .progress-rail {
+    position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+    z-index: 6;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .progress-rail .step {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--mute);
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    transition: color 0.4s ease;
+  }
+  .progress-rail .step .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: transparent; border: 1px solid var(--mute);
+    transition: all 0.4s ease;
+  }
+  .progress-rail .step.active { color: var(--ink); }
+  .progress-rail .step.active .dot { background: var(--gold); border-color: var(--gold); transform: scale(1.3); }
+  .progress-rail .step.passed { color: var(--ink-soft); }
+  .progress-rail .step.passed .dot { background: var(--gold); border-color: var(--gold); }
+
+  /* ---------- SECTION 4 (Scene 4 — high altitude) ---------- */
+  #altitude .scene-bg { background-image: url('scene4.png'); }
+  #altitude .scene-overlay {
+    background: linear-gradient(90deg, rgba(30,35,42,0.85) 0%, rgba(30,35,42,0.5) 35%, rgba(30,35,42,0.1) 60%, rgba(30,35,42,0.05) 100%);
+  }
+  #altitude .scene-content { width: 100%; }
+  #altitude .inner {
+    max-width: 560px; margin-left: 8vw;
+  }
+
+  /* ---------- 3-PILLAR SECTION ---------- */
+  #pillars {
+    background: var(--bg-deep);
+    padding: 140px 40px;
+    min-height: 145vh;
+    position: relative;
+    overflow: hidden;
+  }
+  #pillars .scene-bg {
+    background-image: url('panaromic.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.18;
+    filter: grayscale(0.4) contrast(0.85);
+  }
+  #pillars .scene-overlay {
+    background: radial-gradient(ellipse 65% 55% at 50% 50%, rgba(30,35,42,0.55) 0%, rgba(30,35,42,0.85) 100%);
+  }
+  #pillars .container { position: relative; z-index: 3; }
+  #pillars .container {
+    width: min(1200px, 92vw); margin: 0 auto;
+  }
+  #pillars .header { text-align: center; margin-bottom: 80px; }
+  #pillars .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  }
+  .pillar {
+    border-top: 1px solid var(--line);
+    padding-top: 32px;
+  }
+  .pillar .num {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 48px;
+    color: var(--gold);
+    margin-bottom: 16px; line-height: 1;
+  }
+  .pillar h3 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 32px;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+  .pillar p { font-size: 15px; color: var(--ink-soft); }
+  @media (max-width: 800px) {
+    #pillars .grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- TEAM SECTION ---------- */
+  #team {
+    background: var(--bg);
+    padding: 120px 0 0;
+    min-height: 145vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
+    position: relative;
+  }
+  #team .scene-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url('panaromic.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.18;
+    filter: grayscale(0.4) contrast(0.85);
+  }
+  #team .scene-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(ellipse 70% 55% at 50% 30%, rgba(30,35,42,0.5) 0%, rgba(30,35,42,0.85) 100%);
+  }
+  #team .container {
+    width: min(1200px, 92vw);
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 40px;
+    position: relative;
+    z-index: 2;
+  }
+  /* Team photo carousel — full-width band, photos cross-fade with slide-in motion */
+  #team .team-carousel {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin-top: 80px;
+    flex: 1 1 auto;
+    min-height: 50vh;
+    overflow: hidden;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--line);
+  }
+  #team .team-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    animation: teamSlideShow 15s ease-in-out infinite;
+    opacity: 0;
+  }
+  #team .team-slide:nth-child(1) { animation-delay: 0s;  }
+  #team .team-slide:nth-child(2) { animation-delay: 3s;  }
+  #team .team-slide:nth-child(3) { animation-delay: 6s;  }
+  #team .team-slide:nth-child(4) { animation-delay: 9s;  }
+  #team .team-slide:nth-child(5) { animation-delay: 12s; }
+  /* Each photo: slide-in (0.5s) + pause (2s) + slide-out (0.5s) = 3s active per cycle of 15s */
+  @keyframes teamSlideShow {
+    0%    { opacity: 0; transform: translateX(8%); }
+    3.3%  { opacity: 1; transform: translateX(0); }
+    16.7% { opacity: 1; transform: translateX(0); }
+    20%   { opacity: 0; transform: translateX(-8%); }
+    100%  { opacity: 0; transform: translateX(-8%); }
+  }
+
+  /* ---------- NO ONE CLIMBS ALONE (panoramic interstitial) ---------- */
+  #alone { min-height: 145vh; }
+  #alone .scene-bg {
+    background-image: url('panaromic.png');
+  }
+  #alone .scene-overlay {
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 50%, rgba(30,35,42,0.78) 0%, rgba(30,35,42,0.45) 60%, rgba(30,35,42,0.7) 100%),
+      linear-gradient(180deg, rgba(30,35,42,0.5) 0%, rgba(30,35,42,0.2) 50%, rgba(30,35,42,0.85) 100%);
+  }
+  #alone .scene-content {
+    text-align: center;
+  }
+  #alone .scene-content .eyebrow { justify-content: center; }
+  #alone .scene-content h2 {
+    margin-left: auto; margin-right: auto;
+    max-width: 900px;
+  }
+  #alone .scene-content p {
+    margin-left: auto; margin-right: auto;
+  }
+
+  /* ---------- MULTI-LINE DEPARTMENT CHART (slide 11) ---------- */
+  #how {
+    background: var(--bg-deep);
+    padding: 100px 40px;
+    min-height: 145vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #how .container { width: min(1200px, 94vw); margin: 0 auto; }
+  #how .header { text-align: center; margin-bottom: 40px; }
+  #how .header .lede {
+    margin: 18px auto 0;
+    max-width: 720px;
+    text-align: center;
+  }
+  #how .team-band {
+    display: block;
+    width: 100%;
+    max-width: 1100px;
+    margin: -40px auto 0;
+    height: auto;
+  }
+  #how .dept-chart-wrap {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  #dept-chart {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  #how .dept-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px 26px;
+    margin-top: 22px;
+  }
+  #how .dept-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+  #how .dept-item .swatch {
+    width: 18px;
+    height: 2px;
+    display: inline-block;
+    border-radius: 1px;
+  }
+  #how .dept-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: -12px;
+  }
+
+  /* ---------- SUMMIT (Scene 5) ---------- */
+  #summit {
+    min-height: 145vh;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+  #summit .scene-bg { background-image: url('scene5.png'); }
+  #summit .scene-content {
+    text-align: right;
+    max-width: 640px;
+    width: auto;
+    padding: 90px max(40px, 5vw) 0 0;
+  }
+  #summit .scene-content .eyebrow {
+    justify-content: flex-end;
+  }
+  #summit h1.display { font-size: clamp(40px, 4.6vw, 76px); }
+  #summit .scene-overlay {
+    background:
+      radial-gradient(ellipse 50% 60% at 78% 30%, rgba(30,35,42,0.6) 0%, rgba(30,35,42,0.25) 70%, rgba(30,35,42,0) 100%),
+      linear-gradient(180deg, rgba(30,35,42,0.25) 0%, rgba(30,35,42,0.05) 45%, rgba(30,35,42,0.7) 100%);
+  }
+  #summit h2 em,
+  #summit h1 em { color: var(--gold-warm); }
+
+  /* ---------- CLOSING ---------- */
+  #close {
+    background: var(--bg-deep);
+    padding: 120px 40px 80px;
+    min-height: auto;
+    display: block;
+    text-align: center;
+  }
+  #close .logo {
+    width: 220px; margin: 0 auto 48px;
+    filter: invert(1) brightness(2);
+  }
+  #close .tagline {
+    font-family: ui-serif, Georgia, serif;
+    font-size: clamp(24px, 3vw, 36px);
+    color: var(--ink); letter-spacing: 0.06em;
+    margin-bottom: 16px;
+  }
+  #close .footer {
+    margin-top: 80px;
+    font-size: 11px; letter-spacing: 0.3em; color: var(--mute);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <img src="Enexio_logo.png" alt="ENEXIO">
+  <div class="label">Preparing for the climb</div>
+  <div class="bar"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="logo">ENEXIO</div>
+  <div class="meta">VISION 2030 / STRATEGIC MEET</div>
+</div>
+
+<!-- ============== SECTION 1 — HERO (Scene 1) ============== -->
+<section id="hero">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="eyebrow reveal">Strategic Meet</div>
+    <h1 class="display reveal delay-1">
+      <span class="big-year">2030</span>
+      The <em>Power</em><br>
+      of <em>Base Camps.</em>
+    </h1>
+  </div>
+
+  <div class="scroll-cue reveal delay-4">
+    <span>Scroll to climb</span>
+    <div class="line"></div>
+  </div>
+</section>
+
+<!-- ============== SECTION 2 — BASE CAMP (Scene 2) ============== -->
+<section id="base-camp">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="inner">
+      <div class="eyebrow reveal">What We See</div>
+      <h2 class="section-title reveal delay-1">
+        The <em>summit.</em><br>
+        The <em>triumph.</em><br>
+        The moment of <em>glory.</em>
+      </h2>
+      <p class="body reveal delay-2">
+        This is the photograph. This is the post on the wall.
+        But this is not how it's reached.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== LOOKING UP (Scene 2 — bridge between glory and strategy) ============== -->
+<section id="looking-up">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="inner">
+      <div class="eyebrow reveal">From Where We Stand</div>
+      <h2 class="section-title reveal delay-1">
+        Every climb<br>
+        <em>begins here.</em>
+      </h2>
+      <p class="body reveal delay-2">
+        At base camp. Looking up. The summit visible, the path long.
+        This is where every great climb begins — not at the top,
+        but at the start.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== BASE CAMP ZOOM (isometric base camp close-up) ============== -->
+<section id="base-camp-zoom">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="inner">
+      <div class="eyebrow reveal">The Base Camp</div>
+      <h2 class="section-title reveal delay-1">
+        More than<br>
+        <em>a stop.</em>
+      </h2>
+      <p class="body reveal delay-2">
+        Base camp is where climbers eat, sleep, recover. Where they plan the next push.
+        Where they reset before climbing again.
+      </p>
+      <p class="body reveal delay-3" style="margin-top: 14px;">
+        Without base camp, there is no summit.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 5 — THE ROUTE / STRATEGIC SPINE (Scene 3) ============== -->
+<section id="strategy" class="strategy-section has-pin" data-mode="acclimatize">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay" style="background: linear-gradient(90deg, rgba(30,35,42,0.92) 0%, rgba(30,35,42,0.35) 30%, rgba(30,35,42,0.05) 60%, rgba(30,35,42,0.4) 100%);"></div>
+
+    <!-- Indian flag at the summit -->
+    <div class="summit-flag" aria-hidden="true">
+      <svg viewBox="0 0 80 70" xmlns="http://www.w3.org/2000/svg">
+        <!-- Flagpole -->
+        <rect x="2" y="0" width="2" height="70" fill="#1E232A"/>
+        <circle cx="3" cy="0" r="2.5" fill="#D4A24C"/>
+        <!-- Fabric -->
+        <g class="flag-fabric">
+          <rect x="4" y="2"  width="60" height="13" fill="#FF9933"/>
+          <rect x="4" y="15" width="60" height="13" fill="#FFFFFF"/>
+          <rect x="4" y="28" width="60" height="13" fill="#138808"/>
+          <!-- Ashoka chakra -->
+          <circle cx="34" cy="21.5" r="4.6" fill="none" stroke="#000080" stroke-width="0.9"/>
+          <g stroke="#000080" stroke-width="0.45">
+            <line x1="34" y1="17"   x2="34" y2="26"/>
+            <line x1="29.4" y1="21.5" x2="38.6" y2="21.5"/>
+            <line x1="30.7" y1="18.2" x2="37.3" y2="24.8"/>
+            <line x1="37.3" y1="18.2" x2="30.7" y2="24.8"/>
+          </g>
+          <!-- Fabric edge highlight -->
+          <rect x="4" y="2" width="60" height="39" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.6"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Climber SVG layer (animated) -->
+    <svg class="climber-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path class="route-path"
+            d="M 250 950 C 450 940, 700 870, 960 756 S 1080 580, 1094 410 S 1380 200, 1500 130"
+            fill="none" stroke="rgba(212,162,76,0)" stroke-width="2" stroke-dasharray="6 8"/>
+      <g class="climber-group">
+        <ellipse class="team-shadow" cx="280" cy="952" rx="22" ry="4" fill="rgba(0,0,0,0.3)"/>
+        <image class="climber-img"
+               href="climber.png" xlink:href="climber.png"
+               width="150" height="84"
+               x="-75" y="-78"
+               transform="translate(280, 940)"
+               style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));"/>
+      </g>
+    </svg>
+
+    <!-- Camp markers — Slide 5 shows REAL Everest altitudes -->
+    <div class="camp-marker" data-camp="1" style="left: 14%; top: 86%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Base Camp</div>
+        <div class="camp-year">Khumbu Glacier</div>
+        <div class="camp-target">5,364<small>m</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="2" style="left: 50%; top: 70%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Camp 2</div>
+        <div class="camp-year">Western Cwm</div>
+        <div class="camp-target">6,400<small>m</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="3" style="left: 57%; top: 37%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Camp 3</div>
+        <div class="camp-year">Lhotse Face</div>
+        <div class="camp-target">7,200<small>m</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="4" style="left: 78%; top: 13%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Summit</div>
+        <div class="camp-year">Mt. Everest</div>
+        <div class="camp-target">8,848<small>m</small></div>
+      </div>
+    </div>
+
+    <div class="strategy-overlay">
+      <div class="eyebrow">The Real Everest · 8,848 m</div>
+      <h2>Four camps.<br><em>One summit.</em></h2>
+      <p>From Base Camp at 5,364 m to the summit at 8,848 m — the climb of a lifetime is built one altitude at a time.</p>
+    </div>
+
+    <div class="progress-rail">
+      <div class="step" data-step="1"><span class="dot"></span><span>Base Camp</span></div>
+      <div class="step" data-step="2"><span class="dot"></span><span>Camp 2</span></div>
+      <div class="step" data-step="3"><span class="dot"></span><span>Camp 3</span></div>
+      <div class="step" data-step="4"><span class="dot"></span><span>Summit</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 6 — STRATEGIC SPINE (duplicate of Slide 5) ============== -->
+<section id="strategy-2" class="strategy-section has-pin" data-mode="direct">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay" style="background: linear-gradient(90deg, rgba(30,35,42,0.92) 0%, rgba(30,35,42,0.35) 30%, rgba(30,35,42,0.05) 60%, rgba(30,35,42,0.4) 100%);"></div>
+
+    <!-- Glowing VISION 2030 BY 2030 sign -->
+    <div class="vision-sign" aria-hidden="true">
+      <div class="top-tag">Our Summit</div>
+      <div class="big">Vision 2030</div>
+      <div class="bot-tag">BY 2030</div>
+    </div>
+
+    <svg class="climber-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path class="route-path"
+            d="M 250 950 C 450 940, 700 870, 960 756 S 1080 580, 1094 410 S 1380 200, 1500 130"
+            fill="none" stroke="rgba(212,162,76,0)" stroke-width="2" stroke-dasharray="6 8"/>
+      <g class="climber-group">
+        <ellipse class="team-shadow" cx="280" cy="952" rx="22" ry="4" fill="rgba(0,0,0,0.3)"/>
+        <image class="climber-img"
+               href="climber.png" xlink:href="climber.png"
+               width="150" height="84"
+               x="-75" y="-78"
+               transform="translate(280, 940)"
+               style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));"/>
+      </g>
+    </svg>
+
+    <div class="camp-marker" data-camp="1" style="left: 14%; top: 86%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Camp 1</div>
+        <div class="camp-year">FY 2026 · 27</div>
+        <div class="camp-target">₹650<small>Cr</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="2" style="left: 50%; top: 70%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Camp 2</div>
+        <div class="camp-year">FY 2027 · 28</div>
+        <div class="camp-target">₹925<small>Cr</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="3" style="left: 57%; top: 37%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Camp 3</div>
+        <div class="camp-year">FY 2028 · 29</div>
+        <div class="camp-target">₹1,400<small>Cr</small></div>
+      </div>
+    </div>
+    <div class="camp-marker" data-camp="4" style="left: 78%; top: 13%;">
+      <div class="pin-dot"></div>
+      <div class="label-box">
+        <div class="camp-name">Summit</div>
+        <div class="camp-year">FY 2029 · 30</div>
+        <div class="camp-target">₹2,030<small>Cr</small></div>
+      </div>
+    </div>
+
+    <div class="strategy-overlay">
+      <div class="eyebrow">The Climb · 2026 → 2030</div>
+      <h2>Each <em>target</em> is a <em>base camp.</em></h2>
+      <p>Four years. Four camps. One summit. Each milestone — a place to recover, realign, and go again.</p>
+    </div>
+
+    <div class="progress-rail">
+      <div class="step" data-step="1"><span class="dot"></span><span>Camp 1</span></div>
+      <div class="step" data-step="2"><span class="dot"></span><span>Camp 2</span></div>
+      <div class="step" data-step="3"><span class="dot"></span><span>Camp 3</span></div>
+      <div class="step" data-step="4"><span class="dot"></span><span>Summit</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SECTION 4 — HIGH ALTITUDE (Scene 4) ============== -->
+<section id="altitude">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="inner">
+      <div class="eyebrow reveal">The Final Push</div>
+      <h2 class="section-title reveal delay-1">
+        Climb high.<br>
+        <em>Sleep low.</em>
+      </h2>
+      <p class="body reveal delay-2">
+        On Everest, climbers don't move in a straight line. They climb, descend, acclimatize,
+        and climb again. Every step back makes the next step up possible.
+      </p>
+      <p class="body reveal delay-3" style="margin-top: 18px;">
+        At Enexio, the same is true. Some quarters we push. Some we consolidate.
+        Both are part of the climb.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PILLARS — Safety. Support. Strength. ============== -->
+<section id="pillars">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+  <div class="container">
+    <div class="header" style="margin-bottom: 0;">
+      <div class="eyebrow reveal">A Base Camp Is</div>
+      <h2 class="section-title reveal delay-1">Safety. Support. <em>Strength.</em></h2>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TEAM ============== -->
+<section id="team">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+  <div class="container">
+    <div class="eyebrow reveal">At Enexio</div>
+    <h2 class="section-title reveal delay-1">
+      Our <em>team</em> is our <em>base camp.</em>
+    </h2>
+    <p class="lede reveal delay-2" style="margin: 0 auto;">
+      When things get hard — come back to your team.<br>
+      When you feel stretched — come back to your team.<br>
+      When you succeed — come back and celebrate with your team.
+    </p>
+    <div class="team-carousel">
+      <img class="team-slide" src="team1.jpg"  alt="Enexio team">
+      <img class="team-slide" src="team2.jpg"  alt="Enexio team">
+      <img class="team-slide" src="team3.jpeg" alt="Enexio team">
+      <img class="team-slide" src="team4.jpeg" alt="Enexio team">
+      <img class="team-slide" src="team5.jpeg" alt="Enexio team">
+    </div>
+  </div>
+</section>
+
+<!-- ============== NO ONE CLIMBS ALONE (panoramic) ============== -->
+<section id="alone">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="eyebrow reveal">The Truth About Everest</div>
+    <h2 class="section-title reveal delay-1">
+      No one reaches the summit <em>alone.</em>
+    </h2>
+    <p class="lede reveal delay-2" style="text-align: center;">
+      Behind every summit photo are thirty people you don't see.
+      The climbers ahead. The teams beside. The base camp that waits for you to come back.
+    </p>
+  </div>
+</section>
+
+<!-- ============== DEPARTMENTS / HOW WE CLIMB ============== -->
+<section id="how">
+  <div class="container">
+    <div class="header">
+      <div class="eyebrow reveal">Eight Teams · One Climb</div>
+      <h2 class="section-title reveal delay-1">Every <em>function</em> matters.</h2>
+      <p class="lede reveal delay-2">
+        Each year, every department adds its weight to the rope.
+        Together — Production, Projects, Sales, Spares, Purchase, Design, Finance, HR.
+      </p>
+    </div>
+    <div class="dept-chart-wrap reveal delay-3">
+      <svg id="dept-chart" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <img class="team-band reveal delay-4" src="team8.png" alt="Eight teams climbing together">
+    <div id="dept-legend" class="dept-legend"></div>
+  </div>
+</section>
+
+<!-- ============== SUMMIT (Scene 5) ============== -->
+<section id="summit">
+  <div class="scene-bg"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="scene-content">
+    <div class="eyebrow reveal" style="justify-content: center;">If We Get Our Base Camps Right</div>
+    <h1 class="display reveal delay-1">
+      It's not<br>
+      a question of <em>if.</em><br>
+      It is only a matter of <em>when.</em>
+    </h1>
+  </div>
+</section>
+
+<!-- ============== CLOSING ============== -->
+<section id="close">
+  <img src="Enexio_logo.png" alt="ENEXIO" class="logo reveal">
+  <div class="tagline reveal delay-1">ONE TEAM · ONE DREAM · 2030 BY 2030</div>
+  <div class="footer">Strategic Meet · Vision 2030</div>
+</section>
+
+<script>
+  // ---------- LOADER ----------
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('loader').classList.add('done'), 700);
+  });
+
+  // ---------- CUMULATIVE DEPT CLIMB CHART (slide 11) ----------
+  // Each department adds its weight; line climbs to ₹2,030 Cr at the end.
+  function buildDeptChart() {
+    const svg = document.getElementById('dept-chart');
+    if (!svg) return;
+
+    const W = 1440, H = 700;
+    const M = { top: 130, right: 90, bottom: 110, left: 90 };
+    const innerW = W - M.left - M.right;
+    const innerH = H - M.top - M.bottom;
+
+    // Departments ordered smallest → largest so the line continuously climbs.
+    // Cumulative ends at ₹2,030 Cr.
+    const depts = [
+      { name: 'HR',         contribution:  35 },
+      { name: 'Design',     contribution:  70 },
+      { name: 'Finance',    contribution:  85 },
+      { name: 'Purchase',   contribution: 100 },
+      { name: 'Sales',      contribution: 170 },
+      { name: 'Spares',     contribution: 200 },
+      { name: 'Projects',   contribution: 450 },
+      { name: 'Production', contribution: 920 }
+    ];
+
+    // Compute cumulative
+    let running = 0;
+    const points = depts.map((d, i) => {
+      running += d.contribution;
+      return { name: d.name, value: running, contribution: d.contribution };
+    });
+
+    const Y_MAX = 2030;
+
+    const xs = points.map((_, i) =>
+      M.left + (innerW / (points.length - 1)) * i
+    );
+    const yScale = v => M.top + innerH - (v / Y_MAX) * innerH;
+
+    function smoothLine(pts) {
+      if (pts.length < 2) return '';
+      let p = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[i + 2] || p2;
+        const t = 0.18;
+        const c1x = p1.x + (p2.x - p0.x) * t;
+        const c1y = p1.y + (p2.y - p0.y) * t;
+        const c2x = p2.x - (p3.x - p1.x) * t;
+        const c2y = p2.y - (p3.y - p1.y) * t;
+        p += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+      }
+      return p;
+    }
+
+    // Add an origin point at (M.left, baseY) so the curve starts from zero
+    const baseY = H - M.bottom;
+    const originPt = { x: M.left, y: baseY };
+    const linePts = [originPt, ...points.map((p, i) => ({ x: xs[i], y: yScale(p.value) }))];
+
+    let out = '';
+
+    // Background dotted grid
+    const dotGap = 22;
+    out += `<defs>
+      <pattern id="dotgrid" x="0" y="0" width="${dotGap}" height="${dotGap}" patternUnits="userSpaceOnUse">
+        <circle cx="1" cy="1" r="1" fill="rgba(245,242,235,0.08)"/>
+      </pattern>
+      <linearGradient id="climbGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#D4A24C" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#D4A24C" stop-opacity="0"/>
+      </linearGradient>
+    </defs>`;
+    out += `<rect x="0" y="0" width="${W}" height="${H}" fill="url(#dotgrid)"/>`;
+
+    // Y axis line + X axis line
+    out += `<line x1="${M.left}" y1="${M.top - 10}" x2="${M.left}" y2="${baseY}" stroke="#F5F2EB" stroke-width="2" stroke-linecap="round"/>`;
+    out += `<line x1="${M.left}" y1="${baseY}" x2="${W - M.right + 10}" y2="${baseY}" stroke="#F5F2EB" stroke-width="2" stroke-linecap="round"/>`;
+
+    // Drop lines from each dept point down to the x-axis
+    points.forEach((p, i) => {
+      const x = xs[i];
+      const y = yScale(p.value);
+      out += `<line x1="${x}" y1="${y}" x2="${x}" y2="${baseY}" stroke="#7C7E84" stroke-width="1.4" stroke-linecap="round"/>`;
+    });
+
+    // The smooth climbing line
+    const linePath = smoothLine(linePts);
+    // Subtle area fill below the line
+    const areaPath = `${linePath} L ${linePts[linePts.length - 1].x.toFixed(2)} ${baseY} L ${originPt.x} ${baseY} Z`;
+    out += `<path d="${areaPath}" fill="url(#climbGrad)"/>`;
+    // The line itself (thick gold)
+    out += `<path d="${linePath}" fill="none" stroke="#D4A24C" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    // Dots at each dept point
+    points.forEach((p, i) => {
+      const x = xs[i];
+      const y = yScale(p.value);
+      out += `<circle cx="${x}" cy="${y}" r="12" fill="#1E232A" stroke="#D4A24C" stroke-width="4"/>`;
+    });
+
+    // Department labels under x axis
+    points.forEach((p, i) => {
+      out += `<text x="${xs[i]}" y="${baseY + 36}" fill="#C7C2B7" font-size="16" text-anchor="middle" font-family="ui-sans-serif, system-ui" letter-spacing="0.1em">${p.name}</text>`;
+      out += `<text x="${xs[i]}" y="${baseY + 60}" fill="#7C7E84" font-size="13" text-anchor="middle" font-family="ui-sans-serif, system-ui">+₹${p.contribution}</text>`;
+    });
+
+    // "₹2,030 Crores" annotation — top-right corner with leader line to summit dot
+    const last = linePts[linePts.length - 1];
+    const labelX = W - 40;
+    const labelY1 = 56;
+    const labelY2 = 90;
+    out += `<text x="${labelX}" y="${labelY1}" fill="#E8B95E" font-size="44" text-anchor="end" font-family="ui-serif, Georgia, serif" font-style="italic">₹2,030 Crores</text>`;
+    out += `<text x="${labelX}" y="${labelY2}" fill="#C7C2B7" font-size="13" text-anchor="end" font-family="ui-sans-serif, system-ui" letter-spacing="0.4em">BY 2030</text>`;
+    // thin leader line from label to summit dot
+    out += `<line x1="${(last.x).toFixed(2)}" y1="${(last.y - 14).toFixed(2)}" x2="${(last.x).toFixed(2)}" y2="${labelY2 + 8}" stroke="#D4A24C" stroke-width="1.2" stroke-dasharray="3 4" opacity="0.6"/>`;
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = out;
+
+    // Hide the legend (no longer needed — names are on x-axis)
+    const legend = document.getElementById('dept-legend');
+    if (legend) legend.style.display = 'none';
+  }
+  buildDeptChart();
+
+  // Legacy/unused
+  function buildDeptChart_unused() {
+    const svg = document.getElementById('dept-chart');
+    if (!svg) return;
+
+    const W = 1000, H = 420;
+    const M = { top: 30, right: 40, bottom: 56, left: 60 };
+    const innerW = W - M.left - M.right;
+    const innerH = H - M.top - M.bottom;
+    const TOTAL_MAX = 2030;
+    const years = ['FY 26-27', 'FY 27-28', 'FY 28-29', 'FY 29-30'];
+    const totals = [650, 925, 1400, 2030];
+
+    const depts = [
+      { name: 'Production', color: '#3D4651', values: [320, 440, 650, 920] },
+      { name: 'Projects',   color: '#D4A24C', values: [130, 200, 300, 450] },
+      { name: 'Spares',     color: '#7299AA', values: [ 60,  90, 130, 200] },
+      { name: 'Sales',      color: '#E8B95E', values: [ 50,  75, 110, 170] },
+      { name: 'Purchase',   color: '#5A6573', values: [ 40,  50,  70, 100] },
+      { name: 'Design',     color: '#B8D4E3', values: [ 30,  35,  50,  70] },
+      { name: 'Finance',    color: '#8FB7C9', values: [ 15,  20,  60,  85] },
+      { name: 'HR',         color: '#C7C2B7', values: [  5,  15,  30,  35] }
+    ];
+
+    const cumulative = depts.map(d => [...d.values]);
+    for (let i = 1; i < cumulative.length; i++) {
+      for (let y = 0; y < cumulative[0].length; y++) {
+        cumulative[i][y] += cumulative[i - 1][y];
+      }
+    }
+
+    const xs = depts[0].values.map((_, i) =>
+      M.left + (innerW / (depts[0].values.length - 1)) * i
+    );
+    const yScale = v => M.top + innerH - (v / TOTAL_MAX) * innerH;
+
+    // Smooth path via cardinal-spline-style cubic bezier between points
+    function smoothLine(points) {
+      if (points.length < 2) return '';
+      let p = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i - 1] || points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] || p2;
+        const t = 0.22; // tension (0 = sharp, 0.3 = very smooth)
+        const c1x = p1.x + (p2.x - p0.x) * t;
+        const c1y = p1.y + (p2.y - p0.y) * t;
+        const c2x = p2.x - (p3.x - p1.x) * t;
+        const c2y = p2.y - (p3.y - p1.y) * t;
+        p += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+      }
+      return p;
+    }
+
+    function smoothArea(topVals, bottomVals) {
+      const topPts = topVals.map((v, i) => ({ x: xs[i], y: yScale(v) }));
+      const botPts = bottomVals.map((v, i) => ({ x: xs[i], y: yScale(v) }));
+      const topPath = smoothLine(topPts);
+      const botPath = smoothLine([...botPts].reverse());
+      return `${topPath} L ${botPts[botPts.length - 1].x.toFixed(2)} ${botPts[botPts.length - 1].y.toFixed(2)} ${botPath.replace(/^M[^C]*/, '')} Z`;
+    }
+
+    let out = '';
+
+    // Horizontal grid lines + Y axis labels
+    [0, 500, 1000, 1500, 2000].forEach(v => {
+      const y = yScale(v);
+      out += `<line x1="${M.left}" y1="${y}" x2="${W - M.right}" y2="${y}" stroke="rgba(245,242,235,0.06)" stroke-width="1"/>`;
+      out += `<text x="${M.left - 12}" y="${y + 4}" fill="#7C7E84" font-size="11" text-anchor="end" font-family="ui-sans-serif, system-ui">${v}</text>`;
+    });
+
+    // Vertical year guides
+    xs.forEach(x => {
+      out += `<line x1="${x}" y1="${M.top}" x2="${x}" y2="${H - M.bottom}" stroke="rgba(245,242,235,0.05)" stroke-width="1"/>`;
+    });
+
+    // Stacked areas (bottom-up) — smooth curves
+    depts.forEach((d, i) => {
+      const top = cumulative[i];
+      const bottom = i === 0 ? d.values.map(() => 0) : cumulative[i - 1];
+      const path = smoothArea(top, bottom);
+      out += `<path d="${path}" fill="${d.color}" fill-opacity="0.94" stroke="rgba(0,0,0,0.2)" stroke-width="0.6"/>`;
+    });
+
+    // Top trace line (total trajectory) — smooth
+    const totalPts = totals.map((v, i) => ({ x: xs[i], y: yScale(v) }));
+    out += `<path d="${smoothLine(totalPts)}" fill="none" stroke="#F5F2EB" stroke-width="1.6" stroke-dasharray="3 4" opacity="0.55"/>`;
+
+    // Dots at each total point
+    totals.forEach((v, i) => {
+      out += `<circle cx="${xs[i]}" cy="${yScale(v)}" r="4" fill="#D4A24C" stroke="#F5F2EB" stroke-width="1.5"/>`;
+    });
+
+    // Year + total labels
+    years.forEach((year, i) => {
+      out += `<text x="${xs[i]}" y="${H - 32}" fill="#C7C2B7" font-size="12" text-anchor="middle" font-family="ui-sans-serif, system-ui" letter-spacing="0.08em">${year}</text>`;
+      out += `<text x="${xs[i]}" y="${H - 12}" fill="#D4A24C" font-size="14" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-style="italic">₹${totals[i]}<tspan font-size="10" dx="2">Cr</tspan></text>`;
+    });
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.innerHTML = out;
+
+    const legend = document.getElementById('dept-legend');
+    if (legend) {
+      legend.innerHTML = depts.map(d =>
+        `<div class="dept-item"><span class="swatch" style="background:${d.color}"></span><span>${d.name}</span></div>`
+      ).join('');
+    }
+  }
+
+  // ---------- REVEAL ON SCROLL ----------
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ---------- STRATEGY SECTIONS (multiple): scroll-driven climber w/ acclimatization ----------
+  const strategySections = document.querySelectorAll('.strategy-section');
+  const sectionData = new Map();
+
+  function initSection(section) {
+    const data = {
+      climber: section.querySelector('.climber-img'),
+      teamShadow: section.querySelector('.team-shadow'),
+      routePath: section.querySelector('.route-path'),
+      campMarkers: section.querySelectorAll('.camp-marker'),
+      progressSteps: section.querySelectorAll('.progress-rail .step'),
+      pathLen: 0,
+      lastPathProg: 0,
+      mode: section.getAttribute('data-mode') || 'acclimatize'
+    };
+    if (data.routePath) data.pathLen = data.routePath.getTotalLength();
+    sectionData.set(section, data);
+  }
+
+  strategySections.forEach(initSection);
+  window.addEventListener('resize', () => {
+    strategySections.forEach(s => {
+      const d = sectionData.get(s);
+      if (d && d.routePath) d.pathLen = d.routePath.getTotalLength();
+    });
+  });
+
+  // Real Everest acclimatization rhythm: climb high, sleep low.
+  // Maps scroll progress (0–1) to position on path (0–1), going up and back.
+  // Climber reaches summit at scroll=0.82, then HOLDS through scroll=1.0 (pause at top).
+  const journey = [
+    { scroll: 0.00, path: 0.00 },   // arrive at base camp
+    { scroll: 0.06, path: 0.18 },   // first push up
+    { scroll: 0.10, path: 0.33 },   // REACH CAMP 2 (first time)
+    { scroll: 0.16, path: 0.20 },   // descend to acclimatize
+    { scroll: 0.22, path: 0.28 },   // pause low
+    { scroll: 0.28, path: 0.42 },   // climb back, push higher
+    { scroll: 0.34, path: 0.55 },   // mid-mountain
+    { scroll: 0.40, path: 0.66 },   // REACH CAMP 3 (first time)
+    { scroll: 0.46, path: 0.50 },   // descend to acclimatize
+    { scroll: 0.54, path: 0.58 },   // pause
+    { scroll: 0.62, path: 0.72 },   // climb back to Camp 3 area
+    { scroll: 0.68, path: 0.80 },   // push high
+    { scroll: 0.72, path: 0.76 },   // small back-step
+    { scroll: 0.76, path: 0.90 },   // final approach
+    { scroll: 0.80, path: 0.97 },   // near summit
+    { scroll: 0.82, path: 1.00 },   // SUMMIT REACHED
+    { scroll: 1.00, path: 1.00 }    // HOLD at summit (pause before next slide)
+  ];
+
+  function getPathProgress(scrollProg) {
+    for (let i = 0; i < journey.length - 1; i++) {
+      const a = journey[i], b = journey[i + 1];
+      if (scrollProg >= a.scroll && scrollProg <= b.scroll) {
+        const t = (scrollProg - a.scroll) / (b.scroll - a.scroll);
+        // ease the segment slightly for less robotic motion
+        const eased = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;
+        return a.path + (b.path - a.path) * eased;
+      }
+    }
+    return 1;
+  }
+
+  const arrivalScrollAcclimatize = [0.00, 0.10, 0.40, 0.82];
+  const arrivalScrollDirect      = [0.00, 0.27, 0.55, 0.82];
+
+  function updateStrategySection(section) {
+    const d = sectionData.get(section);
+    if (!d || !d.routePath) return;
+
+    const rect = section.getBoundingClientRect();
+    const total = section.offsetHeight - window.innerHeight;
+    const scrollProg = Math.min(Math.max(-rect.top / total, 0), 1);
+
+    // Direct mode: linear progression to summit (reach by scroll 0.82, then hold).
+    // Acclimatize mode: with rhythm (also reaches summit at 0.82, then holds).
+    const pathProg = d.mode === 'direct'
+      ? Math.min(scrollProg / 0.82, 1.0)
+      : getPathProgress(scrollProg);
+    const arrivalScroll = d.mode === 'direct' ? arrivalScrollDirect : arrivalScrollAcclimatize;
+    const point = d.routePath.getPointAtLength(d.pathLen * pathProg);
+
+    // Direction from path tangent + travel direction (ascending vs descending the journey)
+    const eps = 0.004;
+    const aheadProg = Math.min(1, pathProg + eps);
+    const ahead = d.routePath.getPointAtLength(d.pathLen * aheadProg);
+    const tangentDx = ahead.x - point.x;
+    const isAscending = pathProg >= d.lastPathProg;
+    let dir;
+    if (Math.abs(tangentDx) < 0.01) dir = d.lastDir || 1;
+    else dir = isAscending ? (tangentDx >= 0 ? 1 : -1) : (tangentDx >= 0 ? -1 : 1);
+    d.lastDir = dir;
+    const bob = Math.sin(scrollProg * 60) * 1.4;
+    if (d.climber) {
+      d.climber.setAttribute(
+        'transform',
+        `translate(${point.x}, ${point.y + bob}) scale(${dir}, 1)`
+      );
+    }
+    if (d.teamShadow) {
+      d.teamShadow.setAttribute('cx', point.x);
+      d.teamShadow.setAttribute('cy', point.y + 8);
+      d.teamShadow.setAttribute('rx', 22 - Math.abs(bob) * 2);
+    }
+    d.lastPathProg = pathProg;
+
+    d.campMarkers.forEach((m, i) => {
+      if (scrollProg >= arrivalScroll[i] - 0.005) m.classList.add('active');
+      else m.classList.remove('active');
+    });
+
+    d.progressSteps.forEach((s, i) => {
+      s.classList.remove('active', 'passed');
+      if (scrollProg >= arrivalScroll[i] + 0.02) s.classList.add('passed');
+      else if (scrollProg >= arrivalScroll[i] - 0.02) s.classList.add('active');
+    });
+
+  }
+
+  function onScroll() {
+    strategySections.forEach(updateStrategySection);
+  }
+
+  let raf = null;
+  window.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { onScroll(); raf = null; });
+  }, { passive: true });
+
+  onScroll();
+</script>
+</body>
+</html>

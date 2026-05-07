@@ -1,0 +1,5 @@
+.DS_Store
+*.mov
+_frames/
+node_modules/
+.vscode/

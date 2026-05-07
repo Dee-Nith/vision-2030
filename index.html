@@ -93,9 +93,25 @@
   section.has-pin {
     display: block;
     overflow: visible;
-    min-height: auto;
-    scroll-snap-align: none;
+    min-height: 100vh; /* normal sections — no trailing buffer (caused empty-slide gap + overlap) */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
+  /* generic pin wrapper — sits inside has-pin sections; on regular slides it acts as
+     a 100vh full-bleed flex container (sticky has no room to engage in a 100vh section,
+     which is fine — the pause feel comes from scroll-snap-stop). On strategy sections
+     the section is 800vh, so the pin actually sticks during the long climber animation. */
+  section.has-pin > .pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* strategy spines keep their longer scroll for acclimatization rhythm */
+  .strategy-section { min-height: 800vh; }
   /* closing slide doesn't need a trailing pause */
   #close { min-height: auto; scroll-snap-align: none; }
   .scene-bg {
@@ -179,25 +195,28 @@
     text-transform: uppercase;
   }
 
-  /* ---------- REVEAL ANIMATIONS ---------- */
+  /* ---------- REVEAL ANIMATIONS (cinematic entry — lift + scale + focus-in) ---------- */
   .reveal {
     opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 1s cubic-bezier(0.2, 0.7, 0.2, 1),
-                transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform: translateY(70px) scale(0.92);
+    filter: blur(6px);
+    transition: opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
+                transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
+                filter 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform-origin: 50% 100%;
   }
   .reveal.in {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
   .reveal.delay-1 { transition-delay: 0.12s; }
-  .reveal.delay-2 { transition-delay: 0.24s; }
-  .reveal.delay-3 { transition-delay: 0.36s; }
-  .reveal.delay-4 { transition-delay: 0.48s; }
+  .reveal.delay-2 { transition-delay: 0.26s; }
+  .reveal.delay-3 { transition-delay: 0.40s; }
+  .reveal.delay-4 { transition-delay: 0.54s; }
 
   /* ---------- HERO (Section 1 — Scene 1) ---------- */
-  #hero {
-    min-height: 145vh;
+  #hero > .pin {
     justify-content: flex-start;
     align-items: center;
   }
@@ -299,7 +318,7 @@
   }
 
   /* ---------- LOOKING UP (Scene 2 — the human moment before the climb) ---------- */
-  #looking-up { min-height: 145vh; }
+  /* #looking-up uses has-pin defaults */
   #looking-up .scene-bg { background-image: url('scene2.png'); }
   #looking-up .scene-overlay {
     background: linear-gradient(90deg, rgba(30,35,42,0.1) 0%, rgba(30,35,42,0.3) 50%, rgba(30,35,42,0.85) 100%);
@@ -318,7 +337,7 @@
   }
 
   /* ---------- BASE CAMP ZOOM (isometric base camp focus) ---------- */
-  #base-camp-zoom { min-height: 145vh; }
+  /* #base-camp-zoom uses has-pin defaults */
   #base-camp-zoom .scene-bg {
     background-image: url('basecamp.jpg');
     background-size: cover;
@@ -540,12 +559,10 @@
   }
 
   /* ---------- 3-PILLAR SECTION ---------- */
-  #pillars {
+  #pillars { background: var(--bg-deep); }
+  #pillars > .pin {
     background: var(--bg-deep);
     padding: 140px 40px;
-    min-height: 145vh;
-    position: relative;
-    overflow: hidden;
   }
   #pillars .scene-bg {
     background-image: url('panaromic.png');
@@ -587,15 +604,14 @@
   }
 
   /* ---------- TEAM SECTION ---------- */
-  #team {
+  #team { background: var(--bg); }
+  #team > .pin {
     background: var(--bg);
     padding: 120px 0 0;
-    min-height: 145vh;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    overflow: hidden;
     position: relative;
   }
   #team .scene-bg {
@@ -660,7 +676,7 @@
   }
 
   /* ---------- NO ONE CLIMBS ALONE (panoramic interstitial) ---------- */
-  #alone { min-height: 145vh; }
+  /* #alone uses has-pin defaults */
   #alone .scene-bg {
     background-image: url('panaromic.png');
   }
@@ -682,36 +698,37 @@
   }
 
   /* ---------- MULTI-LINE DEPARTMENT CHART (slide 11) ---------- */
-  #how {
+  #how { background: var(--bg-deep); }
+  #how > .pin {
     background: var(--bg-deep);
-    padding: 100px 40px;
-    min-height: 145vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 56px 40px 40px;
   }
-  #how .container { width: min(1200px, 94vw); margin: 0 auto; }
-  #how .header { text-align: center; margin-bottom: 40px; }
+  #how .container { width: min(1180px, 92vw); margin: 0 auto; }
+  #how .header { text-align: center; margin-bottom: 18px; }
   #how .header .lede {
-    margin: 18px auto 0;
-    max-width: 720px;
+    margin: 14px auto 0;
+    max-width: 680px;
     text-align: center;
+    font-size: clamp(15px, 1.15vw, 17px);
   }
   #how .team-band {
     display: block;
     width: 100%;
-    max-width: 1100px;
-    margin: -40px auto 0;
+    max-width: 880px;
+    margin: -24px auto 0;
     height: auto;
+    max-height: 22vh;
+    object-fit: contain;
   }
   #how .dept-chart-wrap {
     width: 100%;
-    max-width: 1320px;
+    max-width: 1160px;
     margin: 0 auto;
   }
   #dept-chart {
     width: 100%;
     height: auto;
+    max-height: 46vh;
     display: block;
   }
   #how .dept-legend {
@@ -744,8 +761,7 @@
   }
 
   /* ---------- SUMMIT (Scene 5) ---------- */
-  #summit {
-    min-height: 145vh;
+  #summit > .pin {
     align-items: flex-start;
     justify-content: flex-end;
   }
@@ -809,86 +825,94 @@
 </div>
 
 <!-- ============== SECTION 1 — HERO (Scene 1) ============== -->
-<section id="hero">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="hero" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="eyebrow reveal">Strategic Meet</div>
-    <h1 class="display reveal delay-1">
-      <span class="big-year">2030</span>
-      The <em>Power</em><br>
-      of <em>Base Camps.</em>
-    </h1>
-  </div>
+    <div class="scene-content">
+      <div class="eyebrow reveal">Strategic Meet</div>
+      <h1 class="display reveal delay-1">
+        <span class="big-year">2030</span>
+        The <em>Power</em><br>
+        of <em>Base Camps.</em>
+      </h1>
+    </div>
 
-  <div class="scroll-cue reveal delay-4">
-    <span>Scroll to climb</span>
-    <div class="line"></div>
+    <div class="scroll-cue reveal delay-4">
+      <span>Scroll to climb</span>
+      <div class="line"></div>
+    </div>
   </div>
 </section>
 
 <!-- ============== SECTION 2 — BASE CAMP (Scene 2) ============== -->
-<section id="base-camp">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="base-camp" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="inner">
-      <div class="eyebrow reveal">What We See</div>
-      <h2 class="section-title reveal delay-1">
-        The <em>summit.</em><br>
-        The <em>triumph.</em><br>
-        The moment of <em>glory.</em>
-      </h2>
-      <p class="body reveal delay-2">
-        This is the photograph. This is the post on the wall.
-        But this is not how it's reached.
-      </p>
+    <div class="scene-content">
+      <div class="inner">
+        <div class="eyebrow reveal">What We See</div>
+        <h2 class="section-title reveal delay-1">
+          The <em>summit.</em><br>
+          The <em>triumph.</em><br>
+          The moment of <em>glory.</em>
+        </h2>
+        <p class="body reveal delay-2">
+          This is the photograph. This is the post on the wall.
+          But this is not how it's reached.
+        </p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============== LOOKING UP (Scene 2 — bridge between glory and strategy) ============== -->
-<section id="looking-up">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="looking-up" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="inner">
-      <div class="eyebrow reveal">From Where We Stand</div>
-      <h2 class="section-title reveal delay-1">
-        Every climb<br>
-        <em>begins here.</em>
-      </h2>
-      <p class="body reveal delay-2">
-        At base camp. Looking up. The summit visible, the path long.
-        This is where every great climb begins — not at the top,
-        but at the start.
-      </p>
+    <div class="scene-content">
+      <div class="inner">
+        <div class="eyebrow reveal">From Where We Stand</div>
+        <h2 class="section-title reveal delay-1">
+          Every climb<br>
+          <em>begins here.</em>
+        </h2>
+        <p class="body reveal delay-2">
+          At base camp. Looking up. The summit visible, the path long.
+          This is where every great climb begins — not at the top,
+          but at the start.
+        </p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============== BASE CAMP ZOOM (isometric base camp close-up) ============== -->
-<section id="base-camp-zoom">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="base-camp-zoom" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="inner">
-      <div class="eyebrow reveal">The Base Camp</div>
-      <h2 class="section-title reveal delay-1">
-        More than<br>
-        <em>a stop.</em>
-      </h2>
-      <p class="body reveal delay-2">
-        Base camp is where climbers eat, sleep, recover. Where they plan the next push.
-        Where they reset before climbing again.
-      </p>
-      <p class="body reveal delay-3" style="margin-top: 14px;">
-        Without base camp, there is no summit.
-      </p>
+    <div class="scene-content">
+      <div class="inner">
+        <div class="eyebrow reveal">The Base Camp</div>
+        <h2 class="section-title reveal delay-1">
+          More than<br>
+          <em>a stop.</em>
+        </h2>
+        <p class="body reveal delay-2">
+          Base camp is where climbers eat, sleep, recover. Where they plan the next push.
+          Where they reset before climbing again.
+        </p>
+        <p class="body reveal delay-3" style="margin-top: 14px;">
+          Without base camp, there is no summit.
+        </p>
+      </div>
     </div>
   </div>
 </section>
@@ -1066,46 +1090,51 @@
 </section>
 
 <!-- ============== SECTION 4 — HIGH ALTITUDE (Scene 4) ============== -->
-<section id="altitude">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="altitude" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="inner">
-      <div class="eyebrow reveal">The Final Push</div>
-      <h2 class="section-title reveal delay-1">
-        Climb high.<br>
-        <em>Sleep low.</em>
-      </h2>
-      <p class="body reveal delay-2">
-        On Everest, climbers don't move in a straight line. They climb, descend, acclimatize,
-        and climb again. Every step back makes the next step up possible.
-      </p>
-      <p class="body reveal delay-3" style="margin-top: 18px;">
-        At Enexio, the same is true. Some quarters we push. Some we consolidate.
-        Both are part of the climb.
-      </p>
+    <div class="scene-content">
+      <div class="inner">
+        <div class="eyebrow reveal">The Final Push</div>
+        <h2 class="section-title reveal delay-1">
+          Climb high.<br>
+          <em>Sleep low.</em>
+        </h2>
+        <p class="body reveal delay-2">
+          On Everest, climbers don't move in a straight line. They climb, descend, acclimatize,
+          and climb again. Every step back makes the next step up possible.
+        </p>
+        <p class="body reveal delay-3" style="margin-top: 18px;">
+          At Enexio, the same is true. Some quarters we push. Some we consolidate.
+          Both are part of the climb.
+        </p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============== PILLARS — Safety. Support. Strength. ============== -->
-<section id="pillars">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
-  <div class="container">
-    <div class="header" style="margin-bottom: 0;">
-      <div class="eyebrow reveal">A Base Camp Is</div>
-      <h2 class="section-title reveal delay-1">Safety. Support. <em>Strength.</em></h2>
+<section id="pillars" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
+    <div class="container">
+      <div class="header" style="margin-bottom: 0;">
+        <div class="eyebrow reveal">A Base Camp Is</div>
+        <h2 class="section-title reveal delay-1">Safety. Support. <em>Strength.</em></h2>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============== TEAM ============== -->
-<section id="team">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
-  <div class="container">
+<section id="team" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
+    <div class="container">
     <div class="eyebrow reveal">At Enexio</div>
     <h2 class="section-title reveal delay-1">
       Our <em>team</em> is our <em>base camp.</em>
@@ -1122,57 +1151,64 @@
       <img class="team-slide" src="team4.jpeg" alt="Enexio team">
       <img class="team-slide" src="team5.jpeg" alt="Enexio team">
     </div>
+    </div>
   </div>
 </section>
 
 <!-- ============== NO ONE CLIMBS ALONE (panoramic) ============== -->
-<section id="alone">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="alone" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="eyebrow reveal">The Truth About Everest</div>
-    <h2 class="section-title reveal delay-1">
-      No one reaches the summit <em>alone.</em>
-    </h2>
-    <p class="lede reveal delay-2" style="text-align: center;">
-      Behind every summit photo are thirty people you don't see.
-      The climbers ahead. The teams beside. The base camp that waits for you to come back.
-    </p>
+    <div class="scene-content">
+      <div class="eyebrow reveal">The Truth About Everest</div>
+      <h2 class="section-title reveal delay-1">
+        No one reaches the summit <em>alone.</em>
+      </h2>
+      <p class="lede reveal delay-2" style="text-align: center;">
+        Behind every summit photo are thirty people you don't see.
+        The climbers ahead. The teams beside. The base camp that waits for you to come back.
+      </p>
+    </div>
   </div>
 </section>
 
 <!-- ============== DEPARTMENTS / HOW WE CLIMB ============== -->
-<section id="how">
-  <div class="container">
-    <div class="header">
-      <div class="eyebrow reveal">Eight Teams · One Climb</div>
-      <h2 class="section-title reveal delay-1">Every <em>function</em> matters.</h2>
-      <p class="lede reveal delay-2">
-        Each year, every department adds its weight to the rope.
-        Together — Production, Projects, Sales, Spares, Purchase, Design, Finance, HR.
-      </p>
+<section id="how" class="has-pin">
+  <div class="pin">
+    <div class="container">
+      <div class="header">
+        <div class="eyebrow reveal">Eight Teams · One Climb</div>
+        <h2 class="section-title reveal delay-1">Every <em>function</em> matters.</h2>
+        <p class="lede reveal delay-2">
+          Each year, every department adds its weight to the rope.
+          Together — Production, Projects, Sales, Spares, Purchase, Design, Finance, HR.
+        </p>
+      </div>
+      <div class="dept-chart-wrap reveal delay-3">
+        <svg id="dept-chart" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <img class="team-band reveal delay-4" src="team8.png" alt="Eight teams climbing together">
+      <div id="dept-legend" class="dept-legend"></div>
     </div>
-    <div class="dept-chart-wrap reveal delay-3">
-      <svg id="dept-chart" preserveAspectRatio="xMidYMid meet"></svg>
-    </div>
-    <img class="team-band reveal delay-4" src="team8.png" alt="Eight teams climbing together">
-    <div id="dept-legend" class="dept-legend"></div>
   </div>
 </section>
 
 <!-- ============== SUMMIT (Scene 5) ============== -->
-<section id="summit">
-  <div class="scene-bg"></div>
-  <div class="scene-overlay"></div>
+<section id="summit" class="has-pin">
+  <div class="pin">
+    <div class="scene-bg"></div>
+    <div class="scene-overlay"></div>
 
-  <div class="scene-content">
-    <div class="eyebrow reveal" style="justify-content: center;">If We Get Our Base Camps Right</div>
-    <h1 class="display reveal delay-1">
-      It's not<br>
-      a question of <em>if.</em><br>
-      It is only a matter of <em>when.</em>
-    </h1>
+    <div class="scene-content">
+      <div class="eyebrow reveal" style="justify-content: center;">If We Get Our Base Camps Right</div>
+      <h1 class="display reveal delay-1">
+        It's not<br>
+        a question of <em>if.</em><br>
+        It is only a matter of <em>when.</em>
+      </h1>
+    </div>
   </div>
 </section>
 
@@ -1195,8 +1231,8 @@
     const svg = document.getElementById('dept-chart');
     if (!svg) return;
 
-    const W = 1440, H = 700;
-    const M = { top: 130, right: 90, bottom: 110, left: 90 };
+    const W = 1440, H = 560;
+    const M = { top: 100, right: 90, bottom: 90, left: 90 };
     const innerW = W - M.left - M.right;
     const innerH = H - M.top - M.bottom;
 

@@ -113,7 +113,7 @@
   /* strategy spines keep their longer scroll for acclimatization rhythm */
   .strategy-section { min-height: 800vh; }
   /* strategy-2 is a static reveal — climber already at summit, no scroll animation */
-  #strategy-2.strategy-section { min-height: 100vh; }
+  #strategy-2.strategy-section { min-height: 100vh; height: 100vh; }
   /* closing slide doesn't need a trailing pause */
   #close { min-height: auto; scroll-snap-align: none; }
   .scene-bg {
@@ -463,10 +463,15 @@
     top: 6%;
     z-index: 5;
     pointer-events: none;
-    transform: translate(-50%, 0);
-    opacity: 1;
+    transform: translate(-50%, 8px) scale(0.8);
+    opacity: 0;
     transform-origin: bottom center;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  #strategy .summit-flag.planted {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
   }
   #strategy .summit-flag svg {
     width: 56px; height: auto;
@@ -653,27 +658,49 @@
     position: relative;
     z-index: 2;
   }
-  /* Team photo collage — full uncropped photos in a row */
+  /* Team photo collage — three floating tiles, full uncropped images */
   #team .team-collage {
     position: relative;
     z-index: 2;
     width: 100%;
-    margin-top: 50px;
-    flex: 0 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    padding: 12px 0;
+    margin-top: 14px;
+    flex: 1 1 auto;
+    height: 72vh;
   }
   #team .team-collage img {
-    height: 46vh;
+    position: absolute;
+    display: block;
+    height: auto;
     width: auto;
-    max-width: 32%;
-    object-fit: contain;
-    border: 1px solid var(--line);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  #team .team-collage .t1 {
+    left: 1%; top: 0%;
+    max-height: 56%; max-width: 48%;
+    --r: -2deg;
+    animation: tileFloat 6s ease-in-out infinite;
+  }
+  #team .team-collage .t2 {
+    right: 1%; top: 0%;
+    max-height: 56%; max-width: 50%;
+    --r: 1.5deg;
+    animation: tileFloat 7s ease-in-out infinite 1.2s;
+  }
+  #team .team-collage .t3 {
+    left: 50%; top: 47%;
+    transform: translateX(-50%) rotate(var(--r, 0deg));
+    max-height: 53%; max-width: 60%;
+    --r: -1deg;
+    animation: tileFloatCenter 6.5s ease-in-out infinite 2.4s;
+  }
+  @keyframes tileFloat {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50%      { transform: translateY(-12px) rotate(var(--r, 0deg)); }
+  }
+  @keyframes tileFloatCenter {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(var(--r, 0deg)); }
+    50%      { transform: translateX(-50%) translateY(-12px) rotate(var(--r, 0deg)); }
   }
 
   /* ---------- NO ONE CLIMBS ALONE (panoramic interstitial) ---------- */
@@ -1117,9 +1144,9 @@
       When you succeed — come back and celebrate with your team.
     </p>
     <div class="team-collage reveal delay-3">
-      <img src="team/1.jpg" alt="Enexio team">
-      <img src="team/2.jpg" alt="Enexio team">
-      <img src="team/3.jpg" alt="Enexio team">
+      <img class="t1" src="team/1.jpg" alt="Enexio team">
+      <img class="t2" src="team/2.jpg" alt="Enexio team">
+      <img class="t3" src="team/3.jpg" alt="Enexio team">
     </div>
     </div>
   </div>
@@ -1516,7 +1543,9 @@
 
     const rect = section.getBoundingClientRect();
     const total = section.offsetHeight - window.innerHeight;
-    const scrollProg = Math.min(Math.max(-rect.top / total, 0), 1);
+    const scrollProg = total > 0
+      ? Math.min(Math.max(-rect.top / total, 0), 1)
+      : (d.mode === 'static' ? 1 : 0);
 
     // Static mode: climber permanently at summit, all camps active — no scroll animation.
     // Direct mode: linear progression to summit (reach by scroll 0.82, then hold).
@@ -1558,6 +1587,9 @@
       if (scrollProg >= arrivalScroll[i] - 0.005) m.classList.add('active');
       else m.classList.remove('active');
     });
+
+    const flag = section.querySelector('.summit-flag');
+    if (flag) flag.classList.toggle('planted', pathProg >= 0.99);
 
     d.progressSteps.forEach((s, i) => {
       s.classList.remove('active', 'passed');

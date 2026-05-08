@@ -418,6 +418,19 @@
   .camp-marker .camp-target small {
     font-size: 11px; color: var(--ink-soft); letter-spacing: 0.15em; margin-left: 4px;
   }
+  /* per-camp box backgrounds for strategy-2 */
+  #strategy-2 .camp-marker[data-camp="1"] .label-box {
+    background: rgba(39, 119, 78, 0.92); border-color: rgba(111, 207, 151, 0.55);
+  }
+  #strategy-2 .camp-marker[data-camp="2"] .label-box {
+    background: rgba(28, 92, 130, 0.92); border-color: rgba(86, 204, 242, 0.55);
+  }
+  #strategy-2 .camp-marker[data-camp="3"] .label-box {
+    background: rgba(110, 58, 138, 0.92); border-color: rgba(187, 134, 252, 0.6);
+  }
+  #strategy-2 .camp-marker[data-camp="4"] .label-box {
+    background: rgba(122, 76, 18, 0.95); border-color: rgba(212, 162, 76, 0.7);
+  }
 
   .strategy-section .strategy-overlay {
     position: absolute;
@@ -640,41 +653,27 @@
     position: relative;
     z-index: 2;
   }
-  /* Team photo carousel — full-width band, photos cross-fade with slide-in motion */
-  #team .team-carousel {
+  /* Team photo collage — full uncropped photos in a row */
+  #team .team-collage {
     position: relative;
     z-index: 2;
     width: 100%;
-    margin-top: 80px;
-    flex: 1 1 auto;
-    min-height: 50vh;
-    overflow: hidden;
-    background: var(--bg-deep);
-    border-top: 1px solid var(--line);
+    margin-top: 50px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 12px 0;
   }
-  #team .team-slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    animation: teamSlideShow 15s ease-in-out infinite;
-    opacity: 0;
-  }
-  #team .team-slide:nth-child(1) { animation-delay: 0s;  }
-  #team .team-slide:nth-child(2) { animation-delay: 3s;  }
-  #team .team-slide:nth-child(3) { animation-delay: 6s;  }
-  #team .team-slide:nth-child(4) { animation-delay: 9s;  }
-  #team .team-slide:nth-child(5) { animation-delay: 12s; }
-  /* Each photo: slide-in (0.5s) + pause (2s) + slide-out (0.5s) = 3s active per cycle of 15s */
-  @keyframes teamSlideShow {
-    0%    { opacity: 0; transform: translateX(8%); }
-    3.3%  { opacity: 1; transform: translateX(0); }
-    16.7% { opacity: 1; transform: translateX(0); }
-    20%   { opacity: 0; transform: translateX(-8%); }
-    100%  { opacity: 0; transform: translateX(-8%); }
+  #team .team-collage img {
+    height: 46vh;
+    width: auto;
+    max-width: 32%;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
   }
 
   /* ---------- NO ONE CLIMBS ALONE (panoramic interstitial) ---------- */
@@ -1087,32 +1086,6 @@
   </div>
 </section>
 
-<!-- ============== SECTION 4 — HIGH ALTITUDE (Scene 4) ============== -->
-<section id="altitude" class="has-pin">
-  <div class="pin">
-    <div class="scene-bg"></div>
-    <div class="scene-overlay"></div>
-
-    <div class="scene-content">
-      <div class="inner">
-        <div class="eyebrow reveal">The Final Push</div>
-        <h2 class="section-title reveal delay-1">
-          Climb high.<br>
-          <em>Sleep low.</em>
-        </h2>
-        <p class="body reveal delay-2">
-          On Everest, climbers don't move in a straight line. They climb, descend, acclimatize,
-          and climb again. Every step back makes the next step up possible.
-        </p>
-        <p class="body reveal delay-3" style="margin-top: 18px;">
-          At Enexio, the same is true. Some quarters we push. Some we consolidate.
-          Both are part of the climb.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============== PILLARS — Safety. Support. Strength. ============== -->
 <section id="pillars" class="has-pin">
   <div class="pin">
@@ -1120,7 +1093,8 @@
     <div class="scene-overlay"></div>
     <div class="container">
       <div class="header" style="margin-bottom: 0;">
-        <div class="eyebrow reveal">A Base Camp Is</div>
+        <div class="reveal" style="font-family: ui-serif, Georgia, serif; font-style: italic; font-weight: 700; font-size: 44px; color: var(--gold); text-align: center; margin-bottom: 6px; letter-spacing: 0.02em;">Also</div>
+        <div class="eyebrow reveal" style="margin-bottom: 18px;">A Base Camp Is</div>
         <h2 class="section-title reveal delay-1">Safety. Support. <em>Strength.</em></h2>
       </div>
     </div>
@@ -1142,12 +1116,10 @@
       When you feel stretched — come back to your team.<br>
       When you succeed — come back and celebrate with your team.
     </p>
-    <div class="team-carousel">
-      <img class="team-slide" src="team1.jpg"  alt="Enexio team">
-      <img class="team-slide" src="team2.jpg"  alt="Enexio team">
-      <img class="team-slide" src="team3.jpeg" alt="Enexio team">
-      <img class="team-slide" src="team4.jpeg" alt="Enexio team">
-      <img class="team-slide" src="team5.jpeg" alt="Enexio team">
+    <div class="team-collage reveal delay-3">
+      <img src="team/1.jpg" alt="Enexio team">
+      <img src="team/2.jpg" alt="Enexio team">
+      <img src="team/3.jpg" alt="Enexio team">
     </div>
     </div>
   </div>
@@ -1328,7 +1300,6 @@
     // Department labels under x axis
     points.forEach((p, i) => {
       out += `<text x="${xs[i]}" y="${baseY + 36}" fill="#C7C2B7" font-size="16" text-anchor="middle" font-family="ui-sans-serif, system-ui" letter-spacing="0.1em">${p.name}</text>`;
-      out += `<text x="${xs[i]}" y="${baseY + 60}" fill="#7C7E84" font-size="13" text-anchor="middle" font-family="ui-sans-serif, system-ui">+₹${p.contribution}</text>`;
     });
 
     // "₹2,030 Crores" annotation — top-right corner with leader line to summit dot

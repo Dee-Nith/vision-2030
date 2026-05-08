@@ -112,6 +112,8 @@
   }
   /* strategy spines keep their longer scroll for acclimatization rhythm */
   .strategy-section { min-height: 800vh; }
+  /* strategy-2 is a static reveal — climber already at summit, no scroll animation */
+  #strategy-2.strategy-section { min-height: 100vh; }
   /* closing slide doesn't need a trailing pause */
   #close { min-height: auto; scroll-snap-align: none; }
   .scene-bg {
@@ -1010,7 +1012,7 @@
 </section>
 
 <!-- ============== SLIDE 6 — STRATEGIC SPINE (duplicate of Slide 5) ============== -->
-<section id="strategy-2" class="strategy-section has-pin" data-mode="direct">
+<section id="strategy-2" class="strategy-section has-pin" data-mode="static">
   <div class="pin">
     <div class="scene-bg"></div>
     <div class="scene-overlay" style="background: linear-gradient(90deg, rgba(30,35,42,0.92) 0%, rgba(30,35,42,0.35) 30%, rgba(30,35,42,0.05) 60%, rgba(30,35,42,0.4) 100%);"></div>
@@ -1545,12 +1547,16 @@
     const total = section.offsetHeight - window.innerHeight;
     const scrollProg = Math.min(Math.max(-rect.top / total, 0), 1);
 
+    // Static mode: climber permanently at summit, all camps active — no scroll animation.
     // Direct mode: linear progression to summit (reach by scroll 0.82, then hold).
     // Acclimatize mode: with rhythm (also reaches summit at 0.82, then holds).
-    const pathProg = d.mode === 'direct'
-      ? Math.min(scrollProg / 0.82, 1.0)
-      : getPathProgress(scrollProg);
-    const arrivalScroll = d.mode === 'direct' ? arrivalScrollDirect : arrivalScrollAcclimatize;
+    let pathProg;
+    if (d.mode === 'static')      pathProg = 1.0;
+    else if (d.mode === 'direct') pathProg = Math.min(scrollProg / 0.82, 1.0);
+    else                          pathProg = getPathProgress(scrollProg);
+    const arrivalScroll = d.mode === 'static' ? [0, 0, 0, 0]
+                        : d.mode === 'direct' ? arrivalScrollDirect
+                        : arrivalScrollAcclimatize;
     const point = d.routePath.getPointAtLength(d.pathLen * pathProg);
 
     // Direction from path tangent + travel direction (ascending vs descending the journey)
